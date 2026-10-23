@@ -3,6 +3,7 @@ import {
   countSeats,
   createSeatMap,
   createSampleSeatMap,
+  createScenarioSeatMap,
   displaySeats,
   findAdjacentPair,
   findAdjacentSeats,
@@ -41,13 +42,10 @@ for (const column of [0, 11, 1.5, NaN]) {
 }
 checkScenario("Partially filled room", empty, [1, 79], [[1, 2], [1, 3]]);
 
-const scattered: SeatMap = createSeatMap().map((row) => row.map(() => 1));
-for (let row = 0; row < scattered.length; row += 1) {
-  scattered[row][row % 10] = 0;
-}
+const scattered = createScenarioSeatMap("scattered");
 checkScenario("Nearly full room: scattered single seats", scattered, [72, 8], []);
 
-const full: SeatMap = createSeatMap().map((row) => row.map(() => 1));
+const full = createScenarioSeatMap("full");
 checkScenario("Full room", full, [80, 0], []);
 assert.equal(reserveSeat(full, 8, 10), "That seat is already reserved.");
 

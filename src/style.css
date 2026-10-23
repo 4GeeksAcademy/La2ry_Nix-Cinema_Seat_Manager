@@ -1,5 +1,40 @@
 @import "tailwindcss";
 
+.availability-badge {
+  color: var(--green);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.availability-badge.is-sold-out,
+.sold-out-banner {
+  color: #ffb0a3;
+}
+
+.sold-out-banner {
+  padding: 12px;
+  border: 1px solid #ae6c61;
+  border-radius: 6px;
+  background: #442b29;
+  font-weight: 700;
+}
+
+.seat.is-occupied.is-selected {
+  border-color: #e7b86e;
+  color: #251c0e;
+  background: #e7b86e;
+}
+
+.seat.is-occupied.is-selected::after {
+  background: #bc8d48;
+}
+
+#cancel-mode-button[aria-pressed="true"] {
+  border-color: #ffb0a3;
+  color: #ffb0a3;
+  background: #442b29;
+}
+
 :root {
   font-family: Inter, "Avenir Next", Avenir, sans-serif;
   color-scheme: dark;
@@ -168,7 +203,7 @@ a:focus-visible {
 
 .movie-list {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 12px;
 }
 

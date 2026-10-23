@@ -41,6 +41,26 @@ export function createSampleSeatMap(reservedCount = 46): SeatMap {
   return seats;
 }
 
+// Builds one of the four required demonstration room states.
+export function createScenarioSeatMap(scenario: string): SeatMap {
+  if (scenario === "empty") {
+    return createSeatMap();
+  }
+  if (scenario === "partial") {
+    return createSampleSeatMap();
+  }
+  if (scenario === "full" || scenario === "scattered") {
+    const seats = createSampleSeatMap(80);
+    if (scenario === "scattered") {
+      for (let row = 0; row < ROW_COUNT; row += 1) {
+        seats[row][row % SEATS_PER_ROW] = 0;
+      }
+    }
+    return seats;
+  }
+  throw new RangeError(`Unknown room scenario: ${scenario}`);
+}
+
 // Returns the number of available seats.
 export function countAvailableSeats(seats: SeatMap): number {
   return seats.reduce(
@@ -83,16 +103,19 @@ export function displaySeats(seats: SeatMap): void {
 export function findAdjacentSeats(
   seats: SeatMap,
   seatCount = 2,
+  startAfter = -1,
 ): number[] {
   if (!Number.isInteger(seatCount) || seatCount < 1 || seatCount > SEATS_PER_ROW) {
     throw new RangeError(`Group size must be a whole number from 1 to ${SEATS_PER_ROW}.`);
   }
-  for (let rowIndex = 0; rowIndex < ROW_COUNT; rowIndex += 1) {
-    for (
-      let startSeat = 0;
-      startSeat <= SEATS_PER_ROW - seatCount;
-      startSeat += 1
-    ) {
+  const total = ROW_COUNT * SEATS_PER_ROW;
+  for (let step = 1; step <= total; step += 1) {
+    const position = (startAfter + step) % total;
+    const rowIndex = Math.floor(position / SEATS_PER_ROW);
+    const startSeat = position % SEATS_PER_ROW;
+    if (startSeat > SEATS_PER_ROW - seatCount) {
+      continue;
+    }
       const availableRun = seats[rowIndex]
         .slice(startSeat, startSeat + seatCount)
         .every((occupied) => !occupied);
@@ -102,7 +125,6 @@ export function findAdjacentSeats(
           { length: seatCount },
           (_, offset) => rowIndex * SEATS_PER_ROW + startSeat + offset,
         );
-      }
     }
   }
 

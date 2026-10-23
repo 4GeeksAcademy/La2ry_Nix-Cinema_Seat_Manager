@@ -73,22 +73,23 @@
 
         <aside class="booking-panel" aria-label="Reservation controls">
           <p class="eyebrow">OVERVIEW</p>
+          <p class="sold-out-banner" id="sold-out" hidden>Sold out — no seats available</p>
           <div class="stats">
             <div class="stat">
-              <span class="stat-value" id="available-count">34</span>
+              <span class="stat-value" id="available-count">80</span>
               <span class="stat-label">Available</span>
             </div>
             <div class="stat">
-              <span class="stat-value" id="reserved-count">46</span>
+              <span class="stat-value" id="reserved-count">0</span>
               <span class="stat-label">Reserved</span>
             </div>
           </div>
 
-          <label class="occupancy-label" id="occupancy-label" for="occupancy">57.5% reserved</label>
-          <progress id="occupancy" max="80" value="46">46 of 80 reserved</progress>
-          <p class="sample-note">Demo layout: 46 reserved / 80 seats (57.5%). Saved bookings are preserved.</p>
+          <label class="occupancy-label" id="occupancy-label" for="occupancy">0.0% reserved</label>
+          <progress id="occupancy" max="80" value="0">0 of 80 reserved</progress>
+          <p class="sample-note">Empty room demo: 0 reserved, 80 available.</p>
           <button class="button button-secondary" id="sample-button" type="button">
-            Load sample seats
+            Reset movie scenario
           </button>
 
           <div class="divider"></div>
@@ -108,6 +109,9 @@
           <button class="button button-secondary" id="find-button" type="button">
             Find adjacent seats
           </button>
+          <button class="button button-text" id="next-group-button" type="button">
+            Find next group
+          </button>
 
           <div class="divider"></div>
 
@@ -115,6 +119,9 @@
             <span class="field-label">YOUR SELECTION</span>
             <span class="selection-number" id="selected-count">0</span>
           </div>
+          <button class="button button-secondary" id="cancel-mode-button" type="button" aria-pressed="false">
+            Manage cancellations
+          </button>
           <p class="selection-hint" id="selection-hint">
             No seats selected. Choose a numbered green seat or find adjacent seats to enable Reserve and Clear.
           </p>

@@ -1,5 +1,32 @@
 # Cinema Seat Manager
 
+Movie cards show live availability, single-seat-only, or sold-out badges.
+Sold-out screenings disable group search. Booking confirmations include the
+movie, showtime, and seat labels.
+
+Use **Find adjacent seats** for the first group and **Find next group** to cycle
+through other horizontal groups (wrapping to the first group at the end).
+**Manage cancellations** switches to a separate mode: select reserved seats
+marked ×, then click **Cancel reservation for…** and confirm. Exiting this mode
+or switching movies clears the selection. Cancellations update counts and saved
+bookings just like reservations.
+
+### Demonstrating the four room scenarios
+
+Each movie on the website has its own assigned scenario. Click a movie to
+demonstrate it; **Reset movie scenario** restores its original layout after confirmation.
+
+| Movie | Scenario | Reserved | Available | Adjacent pair |
+| --- | --- | --- | --- | --- |
+| The Last Garden | Empty | 0 | 80 | Yes |
+| Blue Hour Express | Partially filled | 46 | 34 | Yes |
+| Little Giants of Nova | Nearly full, scattered single seats | 72 | 8 | No |
+| Midnight Premiere | Full | 80 | 0 | No |
+
+These assigned scenarios use a new browser-storage namespace, so previous demo
+bookings do not override them. Old saved data is left untouched. New bookings
+persist separately for each movie until its scenario is reset.
+
 ## Cinema Seat Manager CLI
 
 Run the interactive seat reservation program with:
@@ -53,19 +80,16 @@ Use the seat map to select and reserve seats, or enter a group size to find
 adjacent seats. The browser app and CLI use the same seat-management functions.
 Browser reservations are saved locally on that device. In the seat map, use
 arrow keys to move between available seats and Space or Enter to select one.
-The website includes three fictional sample films with photographic sample
+The website includes four fictional sample films with photographic sample
 artwork and showtimes. Seat reservations are stored separately for each screening
-in the browser. The first two screenings start with 46 reserved seats and 34
-available (57.5%, the nearest whole-seat approximation to 57%). The last movie,
-**Little Giants of Nova**, starts with 17 reserved and 63 available (21.25%).
-Existing saved bookings
-are preserved; use **Load sample seats** and confirm to replace the current
-screening's reservations with the demo layout. The CLI still starts empty.
+in the browser, starting with the assigned scenarios above. Use **Reset movie
+scenario** and confirm to restore the selected screening. The CLI still starts empty.
 
 Sample photography is downloaded locally from Unsplash:
 [forest](https://images.unsplash.com/photo-1441974231531-c6227db76b6e),
 [train](https://images.unsplash.com/photo-1474487548417-781cb71495f3),
-and [space](https://images.unsplash.com/photo-1446776811953-b23d57bd21aa).
+[space](https://images.unsplash.com/photo-1446776811953-b23d57bd21aa),
+and [cinema](https://images.unsplash.com/photo-1489599849927-2ee91cede3ba).
 The images are illustrative, not official posters for actual films.
 
 The selection summary lists seat labels (such as A7); click a label to remove

@@ -2,7 +2,7 @@ import "./style.css";
 import {
   countAvailableSeats,
   createSeatMap,
-  createSampleSeatMap,
+  createScenarioSeatMap,
   findAdjacentSeats,
   isSeatMap,
   reserveSeat,
@@ -15,18 +15,26 @@ import {
 type Screening = [
   id: string, title: string, genre: string, runtime: string,
   rating: string, showtime: string, poster: string, description: string,
+  scenario: string, scenarioLabel: string,
 ];
 
 const screenings: Screening[] = [
   ["last-garden", "The Last Garden", "Sci-fi · Drama", "1h 52m",
     "PG-13", "6:30 PM", "/posters/last-garden.jpg",
-    "A botanist searches for the last seed on a quiet orbital station."],
+    "A botanist searches for the last seed on a quiet orbital station.",
+    "empty", "Empty room"],
   ["blue-hour", "Blue Hour Express", "Romance · Drama", "1h 44m",
     "PG", "7:15 PM", "/posters/blue-hour-express.jpg",
-    "Two strangers share a midnight train ride along the coast."],
+    "Two strangers share a midnight train ride along the coast.",
+    "partial", "Partially filled"],
   ["little-giants", "Little Giants of Nova", "Adventure · Family", "1h 38m",
     "PG", "8:00 PM", "/posters/little-giants.jpg",
-    "A tiny crew discovers that courage comes in every size."],
+    "A tiny crew discovers that courage comes in every size.",
+    "scattered", "Scattered single seats"],
+  ["midnight-premiere", "Midnight Premiere", "Mystery · Thriller", "1h 56m",
+    "PG-13", "9:30 PM", "/posters/midnight-premiere.jpg",
+    "An archivist finds a final reel that changes everything about opening night.",
+    "full", "Full room"],
 ];
 
 let storageAvailable = true;
@@ -34,11 +42,7 @@ let startupNotice = "";
 const sessionSeatMaps: (SeatMap | undefined)[] = [];
 
 function storageKeyFor(screening: Screening): string {
-  return `${SEAT_STORAGE_KEY}:${screening[0]}`;
-}
-
-function sampleReservedCount(screening: Screening): number {
-  return screening[0] === "little-giants" ? 17 : 46;
+  return `${SEAT_STORAGE_KEY}:scenarios-v1:${screening[0]}`;
 }
 
 function loadSeatMap(screening: Screening): SeatMap {
@@ -52,22 +56,18 @@ function loadSeatMap(screening: Screening): SeatMap {
   }
   let saved: string | null;
   try {
-    saved =
-      window.localStorage.getItem(storageKeyFor(screening)) ??
-      (screening === screenings[0]
-        ? window.localStorage.getItem(SEAT_STORAGE_KEY)
-        : null);
+    saved = window.localStorage.getItem(storageKeyFor(screening));
   } catch (error) {
     if (!(error instanceof DOMException)) {
       throw error;
     }
     storageAvailable = false;
     startupNotice = "Browser storage is unavailable; reservations will last only for this session.";
-    return createSeatMap();
+    return createScenarioSeatMap(screening[8]);
   }
 
   if (saved === null) {
-    return createSampleSeatMap(sampleReservedCount(screening));
+    return createScenarioSeatMap(screening[8]);
   }
 
   let parsed: unknown;
@@ -101,6 +101,9 @@ function loadSeatMap(screening: Screening): SeatMap {
 let activeScreening = screenings[0];
 let seatMap = loadSeatMap(activeScreening);
 let selectedSeats: number[] = [];
+let cancellationMode = false;
+let lastGroupStart = -1;
+let lastGroupSize = 0;
 let activeSeatNumber = Math.max(
   0,
   seatMap.flat().findIndex((occupied) => !occupied),
@@ -135,6 +138,35 @@ const selectionHint = requireElement<HTMLElement>("#selection-hint");
 const selectionList = requireElement<HTMLDivElement>("#selection-list");
 const occupancy = requireElement<HTMLProgressElement>("#occupancy");
 const occupancyLabel = requireElement<HTMLElement>("#occupancy-label");
+const soldOut = requireElement<HTMLElement>("#sold-out");
+const nextGroupButton = requireElement<HTMLButtonElement>("#next-group-button");
+const cancelModeButton = requireElement<HTMLButtonElement>("#cancel-mode-button");
+
+function seatLabel(seat: number): string {
+  return `${String.fromCharCode(65 + Math.floor(seat / SEATS_PER_ROW))}${seat % SEATS_PER_ROW + 1}`;
+}
+
+function isSelectable(seat: number): boolean {
+  return seatMap[Math.floor(seat / SEATS_PER_ROW)][seat % SEATS_PER_ROW] ===
+    (cancellationMode ? 1 : 0);
+}
+
+function refreshAvailabilityBadges(): void {
+  const notice = startupNotice;
+  for (const screening of screenings) {
+    const map = screening === activeScreening ? seatMap : loadSeatMap(screening);
+    const available = countAvailableSeats(map);
+    const badge = movieList.querySelector<HTMLElement>(`[data-availability="${screening[0]}"]`);
+    if (badge) {
+      badge.textContent = available === 0 ? "Sold out" :
+        findAdjacentSeats(map, 2).length === 0
+          ? `${available} single seats left`
+          : `${available} available`;
+      badge.classList.toggle("is-sold-out", available === 0);
+    }
+  }
+  startupNotice = notice;
+}
 
 function saveSeatMap(updatedMap: SeatMap): boolean {
   sessionSeatMaps[screenings.indexOf(activeScreening)] = updatedMap;
@@ -166,6 +198,9 @@ function renderScreenings(): void {
     const title = document.createElement("span");
     const metadata = document.createElement("span");
     const showtime = document.createElement("span");
+    const badge = document.createElement("span");
+    badge.className = "availability-badge";
+    badge.dataset.availability = screening[0];
 
     card.type = "button";
     card.className = "movie-card";
@@ -184,9 +219,9 @@ function renderScreenings(): void {
     metadata.className = "movie-card-meta";
     metadata.textContent = `${screening[2]} · ${screening[3]}`;
     showtime.className = "movie-showtime";
-    showtime.textContent = screening[5];
+    showtime.textContent = `${screening[5]} · ${screening[9]}`;
 
-    details.append(title, metadata, showtime);
+    details.append(title, metadata, showtime, badge);
     card.append(poster, details);
     movieList.append(card);
   }
@@ -195,9 +230,10 @@ function renderScreenings(): void {
   movieDetails.textContent =
     `${activeScreening[5]} · ${activeScreening[3]} · ${activeScreening[4]}`;
   movieDescription.textContent = activeScreening[7];
-  const reserved = sampleReservedCount(activeScreening);
+  const available = countAvailableSeats(createScenarioSeatMap(activeScreening[8]));
+  const reserved = ROW_COUNT * SEATS_PER_ROW - available;
   sampleNote.textContent =
-    `Demo layout: ${reserved} reserved / 80 seats (${(reserved / 80 * 100).toFixed(2)}%). Saved bookings are preserved.`;
+    `${activeScreening[9]} demo: ${reserved} reserved, ${available} available. Reset restores this movie's assigned scenario.`;
 }
 
 function createSeatButtons(): void {
@@ -232,10 +268,10 @@ function createSeatButtons(): void {
 }
 
 function renderSeatMap(): void {
-  if (seatMap.flat()[activeSeatNumber]) {
+  if (!isSelectable(activeSeatNumber)) {
     activeSeatNumber = Math.max(
       0,
-      seatMap.flat().findIndex((occupied) => !occupied),
+      seatMap.flat().findIndex((occupied) => occupied === (cancellationMode ? 1 : 0)),
     );
   }
   for (let rowIndex = 0; rowIndex < ROW_COUNT; rowIndex += 1) {
@@ -245,14 +281,14 @@ function renderSeatMap(): void {
       const selected = selectedSeats.includes(seatNumber);
       const seat = seatButtons[seatNumber];
 
-      seat.disabled = occupied;
-      seat.tabIndex = seatNumber === activeSeatNumber && !occupied ? 0 : -1;
+      seat.disabled = !isSelectable(seatNumber);
+      seat.tabIndex = seatNumber === activeSeatNumber && !seat.disabled ? 0 : -1;
       seat.classList.toggle("is-occupied", occupied);
       seat.classList.toggle("is-selected", selected);
       seat.setAttribute(
         "aria-label",
         `Row ${String.fromCharCode(65 + rowIndex)}, seat ${seatIndex + 1}, ${
-          occupied ? "reserved" : selected ? "selected" : "available"
+          selected ? "selected" : occupied ? "reserved" : "available"
         }`,
       );
       seat.setAttribute("aria-pressed", String(selected));
@@ -266,8 +302,17 @@ function renderSeatMap(): void {
   selectedCount.textContent = String(selectedSeats.length);
   reserveButton.disabled = selectedSeats.length === 0;
   clearButton.disabled = selectedSeats.length === 0;
-  chooseSeatsButton.hidden = selectedSeats.length > 0 || available === 0;
-  selectionHint.textContent = available === 0
+  soldOut.hidden = available !== 0;
+  findButton.disabled = available === 0 || cancellationMode;
+  nextGroupButton.disabled = available === 0 || cancellationMode;
+  groupSizeInput.disabled = cancellationMode || available === 0;
+  cancelModeButton.setAttribute("aria-pressed", String(cancellationMode));
+  cancelModeButton.textContent = cancellationMode ? "Exit cancellation mode" : "Manage cancellations";
+  chooseSeatsButton.hidden = selectedSeats.length > 0 ||
+    (cancellationMode ? available === 80 : available === 0);
+  selectionHint.textContent = cancellationMode
+    ? "Cancellation mode: select reserved seats marked ×, then confirm cancellation below."
+    : available === 0
     ? "This screening is sold out. Choose another movie to find available seats."
     : selectedSeats.length === 0
       ? "No seats selected. Choose a numbered green seat or find adjacent seats to enable Reserve and Clear."
@@ -287,8 +332,9 @@ function renderSeatMap(): void {
     selectionList.append(chip);
   }
   reserveButton.textContent = selectedSeats.length
-    ? `Reserve ${selectedSeats.length} ${selectedSeats.length === 1 ? "seat" : "seats"}`
-    : "Reserve selected seats";
+    ? `${cancellationMode ? "Cancel reservation for" : "Reserve"} ${selectedSeats.length} ${selectedSeats.length === 1 ? "seat" : "seats"}`
+    : cancellationMode ? "Cancel selected reservations" : "Reserve selected seats";
+  refreshAvailabilityBadges();
 }
 
 function showMessage(message: string, isError = false): void {
@@ -306,7 +352,9 @@ chooseSeatsButton.addEventListener("click", () => {
   renderSeatMap();
   availableSeat.focus();
   availableSeat.scrollIntoView({ block: "center", inline: "nearest" });
-  showMessage("Choose a numbered green seat. Press Space or Enter to select it; use arrow keys to move.");
+  showMessage(cancellationMode
+    ? "Select a reserved seat marked × to cancel its reservation."
+    : "Choose a numbered green seat. Press Space or Enter to select it; use arrow keys to move.");
 });
 
 selectionList.addEventListener("click", (event: MouseEvent) => {
@@ -317,6 +365,10 @@ selectionList.addEventListener("click", (event: MouseEvent) => {
   const seatNumber = Number(target.dataset.removeSeat);
   selectedSeats = selectedSeats.filter((selected) => selected !== seatNumber);
   activeSeatNumber = seatNumber;
+  if (!isSelectable(seatNumber)) {
+    showMessage("That seat cannot be selected in the current mode.", true);
+    return;
+  }
   renderSeatMap();
   seatButtons[seatNumber].focus();
   showMessage("Seat removed from your selection.");
@@ -341,7 +393,8 @@ seatGrid.addEventListener("click", (event: MouseEvent) => {
     selectedSeats = [...selectedSeats, seatNumber];
   }
 
-  showMessage("Choose seats and reserve them, or find adjacent seats for your group.");
+  showMessage(cancellationMode ? "Review the selected reservations before cancelling." :
+    "Choose seats and reserve them, or find adjacent seats for your group.");
   renderSeatMap();
   seatButtons[seatNumber].focus();
 });
@@ -369,7 +422,7 @@ seatGrid.addEventListener("keydown", (event: KeyboardEvent) => {
       nextSeat >= 0 &&
       nextSeat < SEATS_PER_ROW
     ) {
-      if (!seatMap[nextRow][nextSeat]) {
+      if (isSelectable(nextRow * SEATS_PER_ROW + nextSeat)) {
         activeSeatNumber = nextRow * SEATS_PER_ROW + nextSeat;
         renderSeatMap();
         seatButtons[activeSeatNumber].focus();
@@ -384,7 +437,7 @@ seatGrid.addEventListener("keydown", (event: KeyboardEvent) => {
       event.key === "Home"
         ? Array.from({ length: SEATS_PER_ROW }, (_, i) => i)
         : Array.from({ length: SEATS_PER_ROW }, (_, i) => SEATS_PER_ROW - i - 1);
-    const nextSeat = candidates.find((candidate) => !seatMap[rowIndex][candidate]);
+    const nextSeat = candidates.find((candidate) => isSelectable(rowIndex * SEATS_PER_ROW + candidate));
     if (nextSeat !== undefined) {
       activeSeatNumber = rowIndex * SEATS_PER_ROW + nextSeat;
       renderSeatMap();
@@ -400,10 +453,24 @@ reserveButton.addEventListener("click", () => {
   }
 
   const reservation = [...selectedSeats];
+  const labels = reservation.map(seatLabel).join(", ");
+  if (cancellationMode && !window.confirm(
+    `Cancel reservations for ${labels} for ${activeScreening[1]} at ${activeScreening[5]}?`,
+  )) {
+    return;
+  }
   const updatedMap = seatMap.map((row) => [...row]);
   for (const seatNumber of reservation) {
     const rowIndex = Math.floor(seatNumber / SEATS_PER_ROW);
     const seatIndex = seatNumber % SEATS_PER_ROW;
+    if (cancellationMode) {
+      if (updatedMap[rowIndex][seatIndex] !== 1) {
+        showMessage("A selected seat is no longer reserved. Review your selection.", true);
+        return;
+      }
+      updatedMap[rowIndex][seatIndex] = 0;
+      continue;
+    }
     const message = reserveSeat(updatedMap, rowIndex + 1, seatIndex + 1);
     if (!message.startsWith("Reserved row")) {
       showMessage(message, true);
@@ -417,27 +484,32 @@ reserveButton.addEventListener("click", () => {
   const focusWasOnReserve = document.activeElement === reserveButton;
   seatMap = updatedMap;
   selectedSeats = [];
+  lastGroupStart = -1;
   showMessage(
-    saved
-      ? `${reservation.length} ${reservation.length === 1 ? "seat" : "seats"} reserved.`
-      : `${reservation.length} ${reservation.length === 1 ? "seat" : "seats"} reserved for this session only; browser storage is unavailable.`,
+    `${cancellationMode ? "Cancelled reservations for" : "Reserved"} ${labels} for ${activeScreening[1]} at ${activeScreening[5]}.${
+      saved ? "" : " Session only: browser storage is unavailable."
+    }`,
+    !saved,
   );
   renderSeatMap();
   if (focusWasOnSeat || focusWasOnReserve) {
-    findButton.focus();
+    cancelModeButton.focus();
   }
 });
 
 sampleButton.addEventListener("click", () => {
-  const reserved = sampleReservedCount(activeScreening);
-  const available = ROW_COUNT * SEATS_PER_ROW - reserved;
+  const sampleMap = createScenarioSeatMap(activeScreening[8]);
+  const available = countAvailableSeats(sampleMap);
+  const reserved = ROW_COUNT * SEATS_PER_ROW - available;
   if (!window.confirm(
     `Replace reservations for ${activeScreening[1]} with the sample layout (${reserved} reserved, ${available} available)?`,
   )) {
     return;
   }
-  seatMap = createSampleSeatMap(reserved);
+  seatMap = sampleMap;
   selectedSeats = [];
+  cancellationMode = false;
+  lastGroupStart = -1;
   const saved = saveSeatMap(seatMap);
   renderSeatMap();
   showMessage(
@@ -466,6 +538,8 @@ movieList.addEventListener("click", (event: MouseEvent) => {
     document.activeElement instanceof HTMLButtonElement &&
     document.activeElement.dataset.screening !== undefined;
   activeScreening = screening;
+  cancellationMode = false;
+  lastGroupStart = -1;
   seatMap = loadSeatMap(activeScreening);
   selectedSeats = [];
   activeSeatNumber = Math.max(
@@ -500,7 +574,7 @@ window.addEventListener("storage", (event: StorageEvent) => {
       if (screening === activeScreening) {
         seatMap = loadSeatMap(activeScreening);
         selectedSeats = selectedSeats.filter(
-          (seat) => !seatMap[Math.floor(seat / SEATS_PER_ROW)][seat % SEATS_PER_ROW],
+          (seat) => isSelectable(seat),
         );
         renderSeatMap();
         showMessage(
@@ -510,6 +584,7 @@ window.addEventListener("storage", (event: StorageEvent) => {
       }
     }
   }
+  refreshAvailabilityBadges();
 });
 
 clearButton.addEventListener("click", () => {
@@ -518,11 +593,21 @@ clearButton.addEventListener("click", () => {
   showMessage("Selection cleared.");
   renderSeatMap();
   if (focusWasOnClear) {
-    findButton.focus();
+    cancelModeButton.focus();
   }
 });
 
-findButton.addEventListener("click", () => {
+cancelModeButton.addEventListener("click", () => {
+  cancellationMode = !cancellationMode;
+  selectedSeats = [];
+  lastGroupStart = -1;
+  renderSeatMap();
+  showMessage(cancellationMode
+    ? "Cancellation mode enabled. Select reserved seats, then confirm cancellation."
+    : "Booking mode enabled. Select available seats to reserve.");
+});
+
+function findGroup(next: boolean): void {
   const groupSize = Number(groupSizeInput.value);
   if (!Number.isInteger(groupSize) || groupSize < 1 || groupSize > SEATS_PER_ROW) {
     showMessage(`Enter a whole number from 1 to ${SEATS_PER_ROW}.`, true);
@@ -530,7 +615,11 @@ findButton.addEventListener("click", () => {
     return;
   }
 
-  const foundSeats = findAdjacentSeats(seatMap, groupSize);
+  const foundSeats = findAdjacentSeats(
+    seatMap, groupSize, next && lastGroupSize === groupSize ? lastGroupStart : -1,
+  );
+  lastGroupSize = groupSize;
+  lastGroupStart = foundSeats[0] ?? -1;
   if (foundSeats.length === 0) {
     selectedSeats = [];
     showMessage(`No group of ${groupSize} adjacent seats is available.`, true);
@@ -543,7 +632,10 @@ findButton.addEventListener("click", () => {
   }
 
   renderSeatMap();
-});
+}
+
+findButton.addEventListener("click", () => findGroup(false));
+nextGroupButton.addEventListener("click", () => findGroup(true));
 
 groupSizeInput.addEventListener("keydown", (event: KeyboardEvent) => {
   if (event.key === "Enter") {
