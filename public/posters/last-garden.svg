@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 480" role="img" aria-labelledby="title">
+  <title id="title">Original sample poster for The Last Garden</title>
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0.8" y2="1">
+      <stop stop-color="#182e40"/>
+      <stop offset="1" stop-color="#668878"/>
+    </linearGradient>
+    <radialGradient id="planet">
+      <stop stop-color="#e8d6a0"/>
+      <stop offset="1" stop-color="#bb9068"/>
+    </radialGradient>
+  </defs>
+  <path fill="url(#sky)" d="M0 0h360v480H0z"/>
+  <circle cx="267" cy="129" r="67" fill="url(#planet)" opacity=".92"/>
+  <path d="M0 363c75-43 127-34 184-2 59-49 111-39 176 2v117H0z" fill="#203f39"/>
+  <path d="M92 403c4-99 15-144 53-206m-37 138c-37-24-47-51-43-82m59 41c34-24 42-53 33-81m-16 117c32-23 63-25 89-12" fill="none" stroke="#b8cc8d" stroke-linecap="round" stroke-width="9"/>
+  <ellipse cx="102" cy="249" rx="11" ry="30" fill="#98b87c" transform="rotate(-42 102 249)"/>
+  <ellipse cx="149" cy="216" rx="12" ry="32" fill="#d4c77e" transform="rotate(35 149 216)"/>
+  <ellipse cx="207" cy="334" rx="14" ry="35" fill="#8eae7a" transform="rotate(56 207 334)"/>
+  <text x="27" y="56" fill="#e3dfc7" font-family="Georgia,serif" font-size="12" letter-spacing="4">A NIX ORIGINAL</text>
+  <text x="26" y="433" fill="#fff8e6" font-family="Georgia,serif" font-size="32">THE LAST</text>
+  <text x="26" y="469" fill="#fff8e6" font-family="Georgia,serif" font-size="32" font-style="italic">GARDEN</text>
+</svg>

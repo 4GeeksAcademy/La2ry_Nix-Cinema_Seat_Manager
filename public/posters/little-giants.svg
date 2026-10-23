@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 480" role="img" aria-labelledby="title">
+  <title id="title">Original sample poster for Little Giants of Nova</title>
+  <defs>
+    <linearGradient id="space" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#302c65"/>
+      <stop offset=".55" stop-color="#6c54a0"/>
+      <stop offset="1" stop-color="#e98f79"/>
+    </linearGradient>
+    <linearGradient id="world" x1="0" y1="0" x2="0" y2="1">
+      <stop stop-color="#7dd2bf"/>
+      <stop offset="1" stop-color="#347b89"/>
+    </linearGradient>
+  </defs>
+  <path fill="url(#space)" d="M0 0h360v480H0z"/>
+  <g fill="#fff2c4">
+    <circle cx="48" cy="107" r="3"/><circle cx="94" cy="156" r="2"/>
+    <circle cx="302" cy="91" r="3"/><circle cx="237" cy="143" r="2"/>
+    <circle cx="322" cy="224" r="2"/><circle cx="43" cy="218" r="2"/>
+  </g>
+  <circle cx="184" cy="303" r="108" fill="url(#world)"/>
+  <path d="M91 317c34-33 58 17 91-9 32-26 49 18 91-11v28c-37 23-60-14-93 13-35 29-62-17-91 8z" fill="#d9d89b" opacity=".86"/>
+  <path d="M149 254c-7-36 8-59 35-59 25 0 40 22 32 59l-11 43h-47z" fill="#f6c77d"/>
+  <circle cx="170" cy="240" r="5" fill="#383259"/><circle cx="195" cy="240" r="5" fill="#383259"/>
+  <path d="M174 259q9 8 18 0" fill="none" stroke="#9f5f65" stroke-linecap="round" stroke-width="3"/>
+  <path d="M159 287l-19 28m67-28 18 25m-51 3-3 22m25-22 7 22" stroke="#f6c77d" stroke-linecap="round" stroke-width="8"/>
+  <path d="M179 195v-17m0 0-11-10m11 10 12-11" stroke="#f6c77d" stroke-linecap="round" stroke-width="4"/>
+  <circle cx="168" cy="167" r="5" fill="#f7a6b3"/><circle cx="192" cy="165" r="5" fill="#f7a6b3"/>
+  <text x="22" y="47" fill="#fff2d0" font-family="Georgia,serif" font-size="12" letter-spacing="4">A NIX ORIGINAL</text>
+  <text x="22" y="424" fill="#fff7df" font-family="Georgia,serif" font-size="27">LITTLE GIANTS</text>
+  <text x="22" y="461" fill="#fff7df" font-family="Georgia,serif" font-size="27" font-style="italic">OF NOVA</text>
+</svg>

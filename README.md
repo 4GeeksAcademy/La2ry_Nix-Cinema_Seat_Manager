@@ -1,4 +1,81 @@
-# Hello World with Typescript
+# Cinema Seat Manager
+
+## Cinema Seat Manager CLI
+
+Run the interactive seat reservation program with:
+
+```bash
+npm run console
+```
+
+The program manages an 8-row, 10-seat theater. You can display the seat map,
+reserve an available seat, count available seats, and find adjacent seats.
+The seat map uses `L` for available seats and `X` for occupied seats, with
+1-based row and column numbers. Seats are stored only in an 8-by-10 numeric
+matrix: `0` = available, `1` = occupied. Both interfaces share this representation.
+
+## Assignment requirements and scenario checks
+
+```bash
+npm run scenarios
+npm run build
+```
+
+The scenario command verifies and prints empty, partially filled, nearly full
+with isolated single seats, and full rooms. It also checks duplicate reservations,
+invalid coordinates, first-pair ordering, and that adjacent searches never cross
+a row boundary.
+
+Core functions in [src/seat-manager.ts](./src/seat-manager.ts):
+- `createSeatMap()` initializes all 80 seats.
+- `displaySeats(seats)` prints the numbered L/X matrix.
+- `reserveSeat(seats, row, column)` validates 1-based coordinates, checks
+  occupancy, and returns a success/failure message.
+- `countSeats(seats)` returns `[occupied, available]`.
+- `findAdjacentPair(seats)` returns the first horizontal pair as
+  `[[row, column], [row, column]]`, or `[]` when none exists.
+- `findAdjacentSeats(seats, size)` also supports larger groups for the website.
+
+Application data uses arrays and functions, not custom objects or classes.
+The optional website uses browser DOM/storage APIs and JSON persistence;
+old boolean bookings are converted to numeric matrices without losing seats.
+The CLI is the evaluated prototype; the website is an optional enhancement.
+
+## Cinema Seat Manager Website
+
+Start the website with:
+
+```bash
+npm run start
+```
+
+Use the seat map to select and reserve seats, or enter a group size to find
+adjacent seats. The browser app and CLI use the same seat-management functions.
+Browser reservations are saved locally on that device. In the seat map, use
+arrow keys to move between available seats and Space or Enter to select one.
+The website includes three fictional sample films with photographic sample
+artwork and showtimes. Seat reservations are stored separately for each screening
+in the browser. The first two screenings start with 46 reserved seats and 34
+available (57.5%, the nearest whole-seat approximation to 57%). The last movie,
+**Little Giants of Nova**, starts with 17 reserved and 63 available (21.25%).
+Existing saved bookings
+are preserved; use **Load sample seats** and confirm to replace the current
+screening's reservations with the demo layout. The CLI still starts empty.
+
+Sample photography is downloaded locally from Unsplash:
+[forest](https://images.unsplash.com/photo-1441974231531-c6227db76b6e),
+[train](https://images.unsplash.com/photo-1474487548417-781cb71495f3),
+and [space](https://images.unsplash.com/photo-1446776811953-b23d57bd21aa).
+The images are illustrative, not official posters for actual films.
+
+The selection summary lists seat labels (such as A7); click a label to remove
+it. The occupancy meter updates after each reservation. Reservations are kept
+in memory when browser storage is blocked, including when switching films;
+these session-only reservations do not survive a reload. Saved booking changes
+from another tab refresh the active seating map automatically.
+Reserve and Clear are enabled only when seats are selected. Use **Choose seats
+on map** to focus an available seat, then click it or press Space/Enter; you can
+also use **Find adjacent seats** to populate your selection.
 
 <!-- hide -->
 > By [@ehiber](https://github.com/ehiber) and contributors at [4Geeks Academy](https://4geeksacademy.com/)

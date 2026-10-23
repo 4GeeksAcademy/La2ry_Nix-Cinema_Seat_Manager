@@ -3,23 +3,142 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Hello World with Typescript</title>
+    <meta
+      name="description"
+      content="Manage cinema seat availability and reservations."
+    />
+    <meta name="theme-color" content="#101715" />
+    <title>Seat Manager — The Nix Cinema</title>
   </head>
-  <body class="min-h-screen bg-slate-100 text-slate-900">
-    <main class="mx-auto flex min-h-screen max-w-2xl flex-col items-center justify-center gap-6 p-6">
-      <h1 class="text-4xl font-bold tracking-tight">Hello World with Typescript</h1>
+  <body>
+    <main class="page-shell">
+      <header class="topbar">
+        <a class="brand" href="/" aria-label="The Nix Cinema home">
+          <span class="brand-mark" aria-hidden="true">N</span>
+          <span>THE NIX <span class="brand-light">CINEMA</span></span>
+        </a>
+        <span class="room-label"><span class="live-dot"></span> SCREENING ROOM 01</span>
+      </header>
 
-      <section class="w-full max-w-md overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-        <img
-          src="/rigo-baby.jpg"
-          alt="Hello Rigo"
-          class="h-64 w-full bg-slate-50 object-contain p-2"
-        />
-        <div class="p-5">
-          <h2 class="text-xl font-semibold text-slate-900">Hello Rigo</h2>
-          <p id="app" class="mt-2 text-sm text-slate-600"></p>
-        </div>
+      <section class="intro">
+        <p class="eyebrow">BOX OFFICE · SEAT MANAGEMENT</p>
+        <h1>Make room for<br /><span>movie night.</span></h1>
+        <p class="intro-copy">
+          Select seats for your guests or find the perfect spot to sit together.
+        </p>
       </section>
+
+      <section class="screenings" aria-labelledby="screenings-heading">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">CURATED FOR TONIGHT</p>
+            <h2 id="screenings-heading">Now showing</h2>
+          </div>
+          <span class="sample-label">SAMPLE FILMS & SHOWTIMES</span>
+        </div>
+        <div class="movie-list" id="movie-list" aria-label="Choose a movie screening"></div>
+      </section>
+
+      <section class="dashboard" aria-label="Cinema seat manager">
+        <div class="theater-panel">
+          <div class="panel-heading">
+            <div>
+              <p class="eyebrow">SELECTED SCREENING</p>
+              <h2 id="movie-title">The Last Garden</h2>
+              <p class="movie-details" id="movie-details">6:30 PM · 1h 52m · PG-13</p>
+            </div>
+            <span class="capacity">80 SEATS</span>
+          </div>
+          <p class="movie-description" id="movie-description">
+            A botanist searches for the last seed on a quiet orbital station.
+          </p>
+
+          <div class="screen-wrap" aria-hidden="true">
+            <div class="screen"></div>
+            <span>SCREEN</span>
+          </div>
+
+          <div
+            class="seat-map"
+            id="seat-grid"
+            role="group"
+            aria-label="Select seats by row and seat number. Use arrow keys to move between available seats."
+          ></div>
+          <div class="seat-legend" aria-label="Seat status legend">
+            <span><i class="legend-seat available-seat"></i> Available</span>
+            <span><i class="legend-seat selected-seat"></i> Selected</span>
+            <span><i class="legend-seat occupied-seat"></i> Reserved</span>
+          </div>
+        </div>
+
+        <aside class="booking-panel" aria-label="Reservation controls">
+          <p class="eyebrow">OVERVIEW</p>
+          <div class="stats">
+            <div class="stat">
+              <span class="stat-value" id="available-count">34</span>
+              <span class="stat-label">Available</span>
+            </div>
+            <div class="stat">
+              <span class="stat-value" id="reserved-count">46</span>
+              <span class="stat-label">Reserved</span>
+            </div>
+          </div>
+
+          <label class="occupancy-label" id="occupancy-label" for="occupancy">57.5% reserved</label>
+          <progress id="occupancy" max="80" value="46">46 of 80 reserved</progress>
+          <p class="sample-note">Demo layout: 46 reserved / 80 seats (57.5%). Saved bookings are preserved.</p>
+          <button class="button button-secondary" id="sample-button" type="button">
+            Load sample seats
+          </button>
+
+          <div class="divider"></div>
+
+          <label class="field-label" for="group-size">FIND SEATS TOGETHER</label>
+          <div class="group-search">
+            <span>Group size</span>
+            <input
+              id="group-size"
+              type="number"
+              min="1"
+              max="10"
+              value="2"
+              inputmode="numeric"
+            />
+          </div>
+          <button class="button button-secondary" id="find-button" type="button">
+            Find adjacent seats
+          </button>
+
+          <div class="divider"></div>
+
+          <div class="selection-heading">
+            <span class="field-label">YOUR SELECTION</span>
+            <span class="selection-number" id="selected-count">0</span>
+          </div>
+          <p class="selection-hint" id="selection-hint">
+            No seats selected. Choose a numbered green seat or find adjacent seats to enable Reserve and Clear.
+          </p>
+          <button class="button button-secondary" id="choose-seats-button" type="button">
+            Choose seats on map
+          </button>
+          <div id="selection-list" class="selection-list" role="group" aria-label="Selected seats. Activate a seat to remove it."></div>
+          <button class="button button-primary" id="reserve-button" type="button" aria-describedby="selection-hint" disabled>
+            Reserve selected seats
+          </button>
+          <button class="button button-text" id="clear-button" type="button" aria-describedby="selection-hint" disabled>
+            Clear selection
+          </button>
+
+          <p class="status-message" id="status-message" role="status" aria-live="polite">
+            Choose seats and reserve them, or find adjacent seats for your group.
+          </p>
+        </aside>
+      </section>
+
+      <footer class="page-footer">
+        <span>THE NIX CINEMA</span>
+        <span>GOOD SEATS. GREAT STORIES.</span>
+      </footer>
     </main>
     <script type="module" src="/src/main.ts"></script>
   </body>

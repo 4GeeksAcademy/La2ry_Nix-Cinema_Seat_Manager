@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 480" role="img" aria-labelledby="title">
+  <title id="title">Original sample poster for Blue Hour Express</title>
+  <defs>
+    <linearGradient id="dusk" x1="0" y1="0" x2="0" y2="1">
+      <stop stop-color="#263963"/>
+      <stop offset=".56" stop-color="#a36675"/>
+      <stop offset="1" stop-color="#f0b879"/>
+    </linearGradient>
+  </defs>
+  <path fill="url(#dusk)" d="M0 0h360v480H0z"/>
+  <circle cx="268" cy="189" r="48" fill="#f7d9ac" opacity=".9"/>
+  <path d="M0 293c71-27 123-23 183 0 62-23 118-23 177-5v192H0z" fill="#324454"/>
+  <path d="M0 337c73-14 135-7 199 8 61-16 112-16 161-7v21c-56 11-109 13-164 27-66-17-123-17-196-4z" fill="#748c91" opacity=".7"/>
+  <path d="M40 255h280l-25 105H65z" fill="#202c3e"/>
+  <path d="M71 270h218l-12 55H84z" fill="#e7bca3"/>
+  <path d="M94 277h82v37H91zm94 0h87l-7 37h-80z" fill="#667d96"/>
+  <path d="M104 287h60m42 0h56" stroke="#f4dbbe" stroke-linecap="round" stroke-width="4" opacity=".8"/>
+  <path d="M52 360h253" stroke="#eabf82" stroke-width="5"/>
+  <text x="24" y="52" fill="#fff2dd" font-family="Georgia,serif" font-size="12" letter-spacing="4">A NIX ORIGINAL</text>
+  <text x="24" y="425" fill="#fff4e3" font-family="Georgia,serif" font-size="28">BLUE HOUR</text>
+  <text x="24" y="462" fill="#fff4e3" font-family="Georgia,serif" font-size="28" font-style="italic">EXPRESS</text>
+</svg>
