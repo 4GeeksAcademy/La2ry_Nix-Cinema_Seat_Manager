@@ -54,14 +54,23 @@ invalid coordinates, first-pair ordering, and that adjacent searches never cross
 a row boundary.
 
 Core functions in [src/seat-manager.ts](./src/seat-manager.ts):
+- `createSeatingMatrix(rows, columns)` uses nested loops to initialize a matrix;
+  dimensions must be positive whole numbers.
 - `createSeatMap()` initializes all 80 seats.
-- `displaySeats(seats)` prints the numbered L/X matrix.
+- `printSeating(seats)` prints the numbered L/X matrix; `displaySeats` is its
+  compatibility alias for the CLI and scenario runner.
 - `reserveSeat(seats, row, column)` validates 1-based coordinates, checks
   occupancy, and returns a success/failure message.
 - `countSeats(seats)` returns `[occupied, available]`.
 - `findAdjacentPair(seats)` returns the first horizontal pair as
   `[[row, column], [row, column]]`, or `[]` when none exists.
 - `findAdjacentSeats(seats, size)` also supports larger groups for the website.
+
+The supplied prototype's loop-based creation, printing, and counting are shared
+with the website. Counts use an array tuple instead of an object to follow the
+assignment rule. `findAdjacentPair` provides 1-based coordinate pairs and uses
+an empty array, rather than `null`, when no pair exists. The existing interactive
+CLI and four-scenario runner replace the prototype's one-off `demo()` call.
 
 Application data uses arrays and functions, not custom objects or classes.
 The optional website uses browser DOM/storage APIs and JSON persistence;
